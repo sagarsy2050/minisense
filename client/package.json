@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "ask": "node cli.js",
-    "health": "node health.js"
+    "health": "node health.js",
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

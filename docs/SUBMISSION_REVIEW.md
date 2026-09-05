@@ -317,37 +317,41 @@ retrieval failing outright.
 
 ## 10. Testing review
 
-Actual test files (`tests/`, 57 tests total per README, offline/no-Ollama):
+Actual test files (`tests/`, 67 tests total, offline/no-Ollama):
 
 `test_api.py`, `test_chunking.py`, `test_cli.py`, `test_comparison_agent.py`,
 `test_config.py`, `test_data_loader.py`, `test_metrics.py`,
-`test_orchestrator.py`, `test_vector_store.py`.
+`test_orchestrator.py`, `test_rag_agent.py`, `test_summary_agent.py`,
+`test_vector_store.py`.
 
 Covered: metric functions (`compute_csat` etc.), chunking edge cases, vector
 store add/search/persist round-trip, config validation, survey record
 validation, heuristic planner routing (`test_orchestrator.py`), comparison
 delta/significance logic, CLI argument handling, FastAPI routes (auth, rate
-limit, `/health`, `/ready`, validation) via `TestClient`.
+limit, `/health`, `/ready`, validation) via `TestClient`, RAGAgent's query
+construction/empty-result handling with `retrieve` mocked
+(`test_rag_agent.py`), and SummaryAgent's deterministic fallback template
+plus the Ollama-backed path with `chat_text` mocked, including mid-call
+failure recovery (`test_summary_agent.py`).
 
-**Gaps** (no file for these — genuinely missing, not hidden):
-- No dedicated `test_data_agent.py` (covered only indirectly through
-  `test_orchestrator.py`'s heuristic-plan tests, which don't assert on
-  `DataAgentResult` contents).
-- No dedicated `test_rag_agent.py` or `test_summary_agent.py` (RAG is tested
-  at the `chunking`/`vector_store` layer, not at `RAGAgent.run`; summary
-  fallback template has no direct unit test).
+The Node client (`client/`) has its own suite —
+`client/test/server.test.js` (`npm test`, Node's built-in `node:test`
+runner) — covering the gateway's proxy routes, bearer-token injection,
+error surfacing, and the direct Ollama status check, with both the Python
+backend and Ollama's HTTP API mocked via `global.fetch` so it runs fully
+offline. Wired into CI as a separate `client-test` job.
+
+**Remaining gap** (genuinely missing, not hidden):
 - No integration test that drives `answer_question` end-to-end against a
   small fixture dataset with Ollama mocked (all Ollama-touching paths are
   exercised only via the CLI/API tests calling into fallback behavior, per
-  the README's own note in §3).
+  the README's own note in §3). `test_data_agent.py` is also still only
+  covered indirectly through `test_orchestrator.py`'s heuristic-plan tests.
 
-**Recommended highest-value additions**: a fixture-based
-`test_data_agent.py`/`test_rag_agent.py` asserting exact `DataAgentResult`/
-`RAGAgentResult` field values for a known small dataset, and one
-`answer_question`-level integration test with `ollama_client` mocked to
-return canned JSON — this would catch orchestrator/schema wiring bugs (like
-the `date.today()` issue in Decision 4 above) without needing a running
-Ollama server in CI.
+**Remaining recommended addition**: one `answer_question`-level integration
+test with `ollama_client` mocked to return canned JSON — this would catch
+orchestrator/schema wiring bugs (like the `date.today()` issue in Decision 4
+above) without needing a running Ollama server in CI.
 
 **Fixed during this review**: `test_api.py::test_ready_reports_data_loaded`
 previously asserted `ollama_reachable is False` by relying on Ollama simply
@@ -355,7 +359,7 @@ not running wherever the suite executes — a real environment-coupling bug
 that surfaced immediately on this machine (Ollama running locally for the
 rest of the demo), failing a test that has nothing to do with Ollama.
 Fixed by mocking `is_available` explicitly rather than depending on
-incidental machine state. All 57 tests pass now, independent of whether
+incidental machine state. All 67 tests pass now, independent of whether
 Ollama happens to be running.
 
 ---
@@ -384,7 +388,8 @@ Ollama happens to be running.
 | Realistic free text | IMPLEMENTED | topic/sentiment template bank + humanizing pass (typos, casing, emojis, sentiment mismatches) — see `data/generate_data.py` |
 | LLM function-calling protocol (OpenAI/Anthropic-style tool schema) | NOT IMPLEMENTED (not required) | Assignment explicitly allows "plain Python" instead |
 | Agent timeout/retry | NOT IMPLEMENTED | No retry wrapper around `ollama_client` calls |
-| Dedicated unit tests per sub-agent (`RAGAgent`, `SummaryAgent`) | PARTIALLY IMPLEMENTED | Covered indirectly via chunking/vector-store/orchestrator tests, no direct agent-level test file |
+| Dedicated unit tests per sub-agent (`RAGAgent`, `SummaryAgent`) | IMPLEMENTED | `tests/test_rag_agent.py`, `tests/test_summary_agent.py` |
+| Node.js client test suite | IMPLEMENTED | `client/test/server.test.js` (`npm test`, `node:test`), wired into CI as `client-test` |
 
 Note on the dataset schema: the assessment's Appendix A sample has a JSON
 syntax error (missing comma after `"business_name"`) — the actual generated
@@ -431,17 +436,16 @@ vs. dataset-anchored "this month") was found and fixed during this session
 via actual end-to-end runs rather than only unit tests.
 
 **Weaknesses/risks**: no retry/timeout hardening around the single external
-dependency (Ollama); sub-agent-level test coverage for `RAGAgent`/
-`SummaryAgent` is indirect rather than direct; the significance thresholds
-in `ComparisonAgent` (§9 table, `RATING_SIG_THRESHOLD=0.15` etc.) are
-reasonable but not statistically derived — fine for this assignment's scope,
-worth flagging as a simplification.
+dependency (Ollama); the significance thresholds in `ComparisonAgent` (§9
+table, `RATING_SIG_THRESHOLD=0.15` etc.) are reasonable but not
+statistically derived — fine for this assignment's scope, worth flagging as
+a simplification.
 
 **Recommended next steps** (explicitly future/optional, not required for
-this submission): direct `RAGAgent`/`SummaryAgent` unit tests with mocked
-Ollama; a retry wrapper with exponential backoff around
+this submission): a retry wrapper with exponential backoff around
 `ollama_client.chat_json`/`chat_text`/`embed`; request-ID propagation through
-the trace for multi-request correlation in logs.
+the trace for multi-request correlation in logs; one
+`answer_question`-level integration test with Ollama mocked end-to-end.
 
 ---
 

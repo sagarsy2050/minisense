@@ -106,7 +106,13 @@ app.post("/api/ask", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`MiniSense gateway + chat UI listening on http://localhost:${PORT}`);
-  console.log(`Proxying to backend at ${API_URL}${API_TOKEN ? " (with bearer token)" : " (no token configured)"}`);
-});
+// Only bind a port when run directly (`node server.js`), not when required
+// by the test suite — lets tests start the app on an ephemeral port instead.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`MiniSense gateway + chat UI listening on http://localhost:${PORT}`);
+    console.log(`Proxying to backend at ${API_URL}${API_TOKEN ? " (with bearer token)" : " (no token configured)"}`);
+  });
+}
+
+module.exports = app;
