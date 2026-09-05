@@ -335,6 +335,7 @@ drift crosses a threshold rather than on a fixed calendar.
 ## 10. Further reading
 
 - [`docs/FINAL_ASSESSMENT_ANALYSIS.md`](docs/FINAL_ASSESSMENT_ANALYSIS.md) — point-by-point mapping of this submission against the assessment brief (Parts 1-3, Appendices A-B).
+- [`docs/fine_tuning_report.md`](docs/fine_tuning_report.md) — the full engineering version of §9's fine-tuning design (same conclusions as the 421-word README answer, with reasoning and trade-offs spelled out; not word-limited).
 - [`docs/SUBMISSION_REVIEW.md`](docs/SUBMISSION_REVIEW.md) — from-source technical review: architecture, real execution traces, design decisions, gaps, compliance matrix.
 - [`docs/whitepaper.md`](docs/whitepaper.md) — engineering white paper.
 - [`docs/presentation.md`](docs/presentation.md) — 15-slide presentation content.
