@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiniSense</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>MiniSense</h1>
+      <p class="subtitle">Survey analysis agent &mdash; local Ollama, no cloud APIs</p>
+      <span id="status-badge" class="badge">checking backend&hellip;</span>
+    </header>
+
+    <main id="thread"></main>
+
+    <form id="ask-form">
+      <input
+        id="question"
+        type="text"
+        autocomplete="off"
+        placeholder="e.g. What are the top 3 complaints this month and how do they compare to last month?"
+        maxlength="1000"
+      />
+      <button id="submit-btn" type="submit">Ask</button>
+    </form>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

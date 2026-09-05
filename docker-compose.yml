@@ -1,0 +1,77 @@
+# Brings up the whole system: the local Ollama runtime plus the MiniSense
+# API, wired together on one network. Usage:
+#
+#   cp .env.example .env   # then set API_AUTH_TOKEN at minimum
+#   docker compose up -d
+#   docker compose exec ollama ollama pull llama3.1:8b
+#   docker compose exec ollama ollama pull nomic-embed-text
+#   docker compose exec app python scripts/ingest_faq.py   # build the FAQ index
+#   curl -H "Authorization: Bearer $API_AUTH_TOKEN" \
+#        -X POST http://localhost:8000/ask \
+#        -H "Content-Type: application/json" \
+#        -d '{"question": "What is our overall CSAT?"}'
+#
+# Model pulls are a one-time manual step (above) rather than automatic on
+# container start, since a multi-GB download on every `up` would make the
+# stack slow and flaky to bring up — persisted in the ollama_models volume
+# after the first pull.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: minisense-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # Uncomment to use an NVIDIA GPU (requires the NVIDIA Container Toolkit
+    # on the host):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minisense-app
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      MINISENSE_ENV: production
+      MINISENSE_LOG_LEVEL: ${MINISENSE_LOG_LEVEL:-INFO}
+      MINISENSE_LLM_MODEL: ${MINISENSE_LLM_MODEL:-llama3.1:8b}
+      MINISENSE_EMBED_MODEL: ${MINISENSE_EMBED_MODEL:-nomic-embed-text}
+      API_AUTH_TOKEN: ${API_AUTH_TOKEN:?API_AUTH_TOKEN must be set — see .env.example}
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-}
+      API_RATE_LIMIT_REQUESTS: ${API_RATE_LIMIT_REQUESTS:-30}
+      API_RATE_LIMIT_WINDOW_SECONDS: ${API_RATE_LIMIT_WINDOW_SECONDS:-60}
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+      - ./outputs:/app/outputs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  ollama_models:

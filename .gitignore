@@ -1,0 +1,45 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Local secrets/config — never commit; see .env.example
+.env
+
+# Generated data & indexes — reproducible via documented scripts
+storage/*.faiss
+storage/*.faiss.npy
+storage/*.meta.json
+data/survey_responses.json
+
+# outputs/eval_results.md is the required Part 2 evaluation checkpoint
+# deliverable and IS committed; ignore anything else generated into outputs/.
+outputs/*
+!outputs/eval_results.md
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Node client
+client/node_modules/
+client/.env
+client/gateway.log
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Misc local run logs
+uvicorn.log
