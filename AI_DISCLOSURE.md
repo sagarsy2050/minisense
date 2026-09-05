@@ -4,8 +4,7 @@ This project — the agent implementations, RAG pipeline, synthetic data
 generator, tests, notebooks, and accompanying documentation
 (`docs/SUBMISSION_REVIEW.md`, `docs/whitepaper.md`,
 `docs/presentation.md`) — was developed
-with **Claude Code (Anthropic)** as a coding and documentation assistant,
-working interactively:
+with an **AI coding assistant** used interactively throughout development:
 
 - Code was written, then actually executed against a local Ollama server
   (`llama3.1:8b`, `nomic-embed-text`) and the real generated dataset, not
