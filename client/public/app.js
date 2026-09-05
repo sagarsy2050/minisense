@@ -9,6 +9,37 @@ const exampleChips = document.getElementById("example-chips");
 const newChatBtn = document.getElementById("new-chat-btn");
 const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebar-toggle");
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
+const themeIconLight = document.getElementById("theme-icon-light");
+const themeIconDark = document.getElementById("theme-icon-dark");
+
+const THEME_KEY = "minisense-theme";
+
+function applyTheme(theme) {
+  // theme is "light", "dark", or null (follow system preference)
+  if (theme) document.documentElement.setAttribute("data-theme", theme);
+  else document.documentElement.removeAttribute("data-theme");
+
+  const isDark = theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  themeIconLight.style.display = isDark ? "none" : "block";
+  themeIconDark.style.display = isDark ? "block" : "none";
+}
+
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  applyTheme(stored);
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const currentlyDark = current === "dark" || (!current && systemDark);
+  const next = currentlyDark ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+initTheme();
 
 const EXAMPLE_QUESTIONS = [
   "What are the top 3 complaints this month and how do they compare to last month?",

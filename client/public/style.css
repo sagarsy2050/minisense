@@ -1,10 +1,11 @@
 :root {
+  /* Light mode (default) */
   --bg: #ffffff;
   --panel: #ffffff;
-  --panel-2: #f4e7b5;
+  --panel-2: #f8f9fa;
   --border: #e5d6a3;
   --text: #171717;
-  --muted: #7a7256;
+  --muted: #6b7280;
   --accent: #c9a227;
   --accent-2: #a8841d;
   --accent-soft: #f4e7b5;
@@ -17,6 +18,50 @@
   --err: #c0392b;
   --radius: 14px;
   --shadow: 0 1px 2px rgba(23, 23, 23, 0.06);
+}
+
+/* Dark metallic mode: system preference (unless explicitly overridden to light) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d0d0f;
+    --panel: #1a1a1e;
+    --panel-2: #1a1a1e;
+    --border: #3a3a42;
+    --text: #f5f5f7;
+    --muted: #a1a1aa;
+    --accent: #d4af37;
+    --accent-2: #a8841d;
+    --accent-soft: #2b2410;
+    --accent-soft-border: #4a3b12;
+    --accent-ink: #171717;
+    --user-bubble: #2b2410;
+    --agent-bubble: #1a1a1e;
+    --ok: #2ecc71;
+    --warn: #e0a94e;
+    --err: #e57373;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Dark metallic mode: explicit user toggle (wins over system preference) */
+:root[data-theme="dark"] {
+  --bg: #0d0d0f;
+  --panel: #1a1a1e;
+  --panel-2: #1a1a1e;
+  --border: #3a3a42;
+  --text: #f5f5f7;
+  --muted: #a1a1aa;
+  --accent: #d4af37;
+  --accent-2: #a8841d;
+  --accent-soft: #2b2410;
+  --accent-soft-border: #4a3b12;
+  --accent-ink: #171717;
+  --user-bubble: #2b2410;
+  --agent-bubble: #1a1a1e;
+  --ok: #2ecc71;
+  --warn: #e0a94e;
+  --err: #e57373;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 * { box-sizing: border-box; }
@@ -67,13 +112,24 @@ body {
 .dot.warn { background: var(--warn); box-shadow: 0 0 6px rgba(168,114,26,0.5); }
 .dot.err { background: var(--err); box-shadow: 0 0 6px rgba(192,57,43,0.5); }
 
+.action-row { display: flex; gap: 8px; }
+
 .new-chat-btn {
-  display: flex; align-items: center; gap: 8px;
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   background: var(--panel-2); color: var(--text);
   border: 1px solid var(--border); border-radius: 10px;
   padding: 9px 12px; font-size: 13px; cursor: pointer; font-weight: 500;
 }
 .new-chat-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+.theme-toggle-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; flex-shrink: 0;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+}
+.theme-toggle-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
 
 .side-section { display: flex; flex-direction: column; gap: 8px; }
 .side-title {
