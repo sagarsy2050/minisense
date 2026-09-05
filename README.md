@@ -283,64 +283,66 @@ of what it shows:
 ## 9. Part 3 — Fine-Tuning Design (300–500 words)
 
 **Scenario:** classify 10,000 free-text survey responses/day into 8
-sentiment+topic categories, currently done accurately but too expensively
-with GPT-4o.
+sentiment+topic categories — GPT-4o does this accurately but too expensively
+to run at that volume.
 
-**Data strategy.** I'd start by running the frontier model over a stratified
-historical sample (by business, rating, and channel) to bootstrap labels
-cheaply, then have humans review a subset for quality control — full manual
-labeling of 10k/day is not sustainable, but zero human review risks
-distilling the frontier model's own biases and errors uncorrected. I'd target
-roughly 3,000–5,000 labeled examples for a first LoRA pass on a small
-instruction-tuned base model — this task (8-way classification with fairly
-distinct topic vocabulary) needs far less data than generation tasks — then
-actively sample low-confidence and disagreement cases for a second labeling
-round rather than randomly growing the set, since those are what actually
-move accuracy. I'd deliberately oversample rare categories (e.g. rare
-complaint types) so the class imbalance in raw survey data doesn't get
-baked into the classifier.
+**Data strategy.** Bootstrap labels by running the frontier model over a
+stratified historical sample (by business, rating, channel), then have
+humans review a subset for quality control — zero review risks distilling
+the frontier model's own errors uncorrected. Target ~3,000–5,000 labeled
+examples for a first pass: 8-way classification with distinct topic
+vocabulary needs far less data than generation tasks. Grow the set by
+actively sampling low-confidence/disagreement cases, not randomly, since
+those move accuracy most. Deliberately oversample rare categories so class
+imbalance in raw data doesn't get baked into the classifier.
 
 **Model & technique.** A small open model in the 3B–8B range (e.g. Llama
-3.1 8B or a similarly sized instruct model) is plenty for 8-way text
-classification and keeps inference cost and latency low. QLoRA over full
-fine-tuning: the task is narrow and the label space is small, so a low-rank
-adapter captures it fully, at a fraction of the memory/compute, and keeps
-the base model reusable for other classification tasks by swapping adapters.
-Full FT would only be justified if the base model's domain vocabulary were
-badly mismatched (not the case for restaurant/retail survey text).
+3.1 8B) is plenty for 8-way classification and keeps inference cost/latency
+low. QLoRA over full fine-tuning: the task and label space are narrow, so a
+low-rank adapter captures it fully at a fraction of the compute, and keeps
+the base model reusable for other tasks via adapter swapping. Full FT would
+only be justified if the base model's domain vocabulary were badly
+mismatched, which isn't the case here.
 
 **Training pipeline.** Hugging Face `transformers` + `peft` + `TRL`'s
-`SFTTrainer` for a first pass — well-documented, easy to reason about.
-Axolotl or LLaMA-Factory if the team needs to iterate on many similar
-fine-tunes quickly, since their config-driven workflow reduces
-boilerplate per experiment. I'd structure the job as: frozen base weights,
-QLoRA adapter on attention + MLP projection layers, single epoch or two over
-the curated set with early stopping on a held-out validation split, standard
-classification-style prompt template with the 8 categories enumerated.
+`SFTTrainer` for a first pass — well-documented, easy to reason about;
+Axolotl/LLaMA-Factory if iterating on many similar fine-tunes, since their
+config-driven workflow cuts per-experiment boilerplate. Structure: frozen
+base weights, QLoRA adapter on attention + MLP projections, one or two
+epochs with early stopping on a held-out split, a standard classification
+prompt template enumerating the 8 categories.
 
-**Evaluation.** Per-class precision/recall/F1 (not just overall accuracy,
-given class imbalance), plus a direct agreement-rate comparison against
-GPT-4o on a frozen held-out set the model never trained on. I'd set a
-concrete bar before replacing the frontier model in production — e.g.
-matching GPT-4o's agreement-with-human-label rate within a small margin
-on every category, not just in aggregate — and run a shadow-mode period
-where both models score the same live traffic before the switch.
+**Evaluation.** Per-class precision/recall/F1 (not just accuracy, given
+class imbalance), plus a direct agreement-rate comparison against GPT-4o on
+a frozen held-out set. Set a concrete production bar — matching GPT-4o's
+agreement-with-human-label rate within a small margin on every category,
+not just on average — and run a shadow-mode period scoring live traffic
+with both models before switching.
 
 **Serving.** Serve the adapter alongside the existing LLM service via
 adapter-swapping (vLLM/TGI support multiple LoRA adapters on one base model
-process), so this route doesn't require a separate GPU deployment or
-disrupt other routes on the same server; route survey-classification traffic
-to the adapter, everything else stays on the frontier model or base model.
+process) — no separate GPU deployment, no disruption to other routes.
+Survey-classification traffic routes to the adapter; everything else stays
+on the frontier/base model.
 
-**Future-proofing.** Keep label taxonomy and prompt template in a versioned
-config, not hardcoded — a category set change should be a config diff and a
-retrain, not a code change. Log every prediction with input+output for
-periodic drift review (are today's free-text responses statistically
-different from what the adapter was trained on?), and re-run the
-active-sampling labeling loop whenever drift crosses a threshold rather than
-on a fixed calendar schedule.
+**Future-proofing.** Keep the label taxonomy and prompt template in
+versioned config, not hardcoded, so a category change is a config diff and
+a retrain, not a code change. Log every prediction (input+output) for
+periodic drift review, and re-run the active-sampling labeling loop when
+drift crosses a threshold rather than on a fixed calendar.
 
-## 10. Contributing & license
+## 10. Further reading
+
+- [`docs/SUBMISSION_REVIEW.md`](docs/SUBMISSION_REVIEW.md) — from-source technical review: architecture, real execution traces, design decisions, gaps, compliance matrix.
+- [`docs/whitepaper.md`](docs/whitepaper.md) — engineering white paper.
+- [`docs/presentation.md`](docs/presentation.md) — 15-slide presentation content.
+- [`docs/interview_preparation.md`](docs/interview_preparation.md) — 100 project-grounded interview Q&As.
+- [`docs/final_report.md`](docs/final_report.md) — submission readiness report (score, strengths, risks, exact files changed).
+- [`notebooks/end_to_end_workflow.ipynb`](notebooks/end_to_end_workflow.ipynb) — the core pipeline run live, minimal.
+- [`notebooks/minisense_business_analysis.ipynb`](notebooks/minisense_business_analysis.ipynb) — fuller business-analytics notebook (data quality, CSAT/theme charts, agent trace, RAG evaluation), executed with real output.
+- [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) — AI tooling disclosure.
+
+## 11. Contributing & license
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup and the pre-PR checklist
 (lint/type-check/test — the same three CI runs). Licensed under the

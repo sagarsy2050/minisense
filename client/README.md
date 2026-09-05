@@ -11,6 +11,14 @@ A small Node.js layer on top of the Python FastAPI backend (`minisense.api`):
   trace.
 - **`cli.js`** &mdash; Node CLI client. Talks straight to the FastAPI backend
   (or through the gateway).
+- **`health.js`** &mdash; CLI health check (`npm run health`). Checks the
+  gateway, the FastAPI backend, and Ollama itself — the Ollama check
+  (`GET /api/ollama/status`) queries Ollama's own REST API directly from
+  Node (`/api/version`, `/api/tags`), independent of the Python backend, so
+  it still reports Ollama's state even if the backend is down. Reports
+  `healthy` (model pulled and reachable), `degraded` (Ollama up, configured
+  model not pulled), or `unavailable` (Ollama unreachable) — never crashes
+  the app, just reports status.
 
 ## Setup
 
@@ -39,4 +47,19 @@ cp .env.example .env
 ```bash
 node cli.js "What is our overall CSAT and how does it compare to our stated CSAT target?"
 node cli.js --trace "What are the top 3 complaints this month and how do they compare to last month?"
+npm run health   # checks gateway + backend + Ollama, exits non-zero if degraded
 ```
+
+## If Ollama isn't set up yet
+
+1. Install Ollama: https://ollama.com
+2. Start it: `ollama serve` (or it may already run as a background service)
+3. Pull the two models this project uses:
+   ```bash
+   ollama pull llama3.1:8b
+   ollama pull nomic-embed-text
+   ```
+4. Verify: `npm run health` — should report `"status":"healthy"` under `ollama`.
+   If it reports `degraded` with a "not found" detail, the model name in
+   `MINISENSE_LLM_MODEL` (`.env`) doesn't match what you pulled — check with
+   `ollama list`.

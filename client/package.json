@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "ask": "node cli.js"
+    "ask": "node cli.js",
+    "health": "node health.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

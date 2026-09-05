@@ -10,6 +10,8 @@ const rateLimit = require("express-rate-limit");
 const PORT = process.env.PORT || 3000;
 const API_URL = process.env.MINISENSE_API_URL || "http://localhost:8000";
 const API_TOKEN = process.env.MINISENSE_API_TOKEN || "";
+const OLLAMA_URL = process.env.OLLAMA_HOST || "http://localhost:11434";
+const OLLAMA_MODEL = process.env.MINISENSE_LLM_MODEL || "llama3.1:8b";
 const RATE_LIMIT_REQUESTS = Number(process.env.GATEWAY_RATE_LIMIT_REQUESTS || 30);
 const RATE_LIMIT_WINDOW_MS = Number(process.env.GATEWAY_RATE_LIMIT_WINDOW_MS || 60000);
 
@@ -50,6 +52,40 @@ app.get("/api/ready", async (_req, res) => {
   } catch (err) {
     res.status(502).json({ detail: `Cannot reach MiniSense backend at ${API_URL}: ${err.message}` });
   }
+});
+
+// Direct Node-side Ollama check (independent of the Python backend) — hits
+// Ollama's own REST API so this gateway can report Ollama status even if
+// the FastAPI backend itself is down.
+app.get("/api/ollama/status", async (_req, res) => {
+  const base = {
+    application: "MiniSense",
+    ollama: { baseUrl: OLLAMA_URL, modelConfigured: OLLAMA_MODEL, available: false, modelAvailable: false },
+  };
+  let versionResp;
+  try {
+    versionResp = await fetch(`${OLLAMA_URL}/api/version`, { signal: AbortSignal.timeout(3000) });
+  } catch (err) {
+    return res.status(200).json({ ...base, status: "unavailable", detail: `Cannot reach Ollama at ${OLLAMA_URL}: ${err.message}` });
+  }
+  if (!versionResp.ok) {
+    return res.status(200).json({ ...base, status: "unavailable", detail: `Ollama returned HTTP ${versionResp.status}` });
+  }
+  base.ollama.available = true;
+
+  try {
+    const tagsResp = await fetch(`${OLLAMA_URL}/api/tags`, { signal: AbortSignal.timeout(3000) });
+    const tags = await tagsResp.json();
+    const names = (tags.models || []).map((m) => m.name);
+    base.ollama.modelAvailable = names.includes(OLLAMA_MODEL);
+    base.ollama.pulledModels = names;
+  } catch (err) {
+    return res.status(200).json({ ...base, status: "degraded", detail: `Ollama reachable but /api/tags failed: ${err.message}` });
+  }
+
+  const status = base.ollama.modelAvailable ? "healthy" : "degraded";
+  const detail = base.ollama.modelAvailable ? null : `Configured model '${OLLAMA_MODEL}' not found — run: ollama pull ${OLLAMA_MODEL}`;
+  res.status(200).json({ ...base, status, detail });
 });
 
 app.post("/api/ask", async (req, res) => {
