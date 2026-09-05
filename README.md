@@ -334,6 +334,7 @@ drift crosses a threshold rather than on a fixed calendar.
 
 ## 10. Further reading
 
+- [`docs/FINAL_ASSESSMENT_ANALYSIS.md`](docs/FINAL_ASSESSMENT_ANALYSIS.md) — point-by-point mapping of this submission against the assessment brief (Parts 1-3, Appendices A-B).
 - [`docs/SUBMISSION_REVIEW.md`](docs/SUBMISSION_REVIEW.md) — from-source technical review: architecture, real execution traces, design decisions, gaps, compliance matrix.
 - [`docs/whitepaper.md`](docs/whitepaper.md) — engineering white paper.
 - [`docs/presentation.md`](docs/presentation.md) — 15-slide presentation content.
