@@ -43,3 +43,6 @@ notebooks/.ipynb_checkpoints/
 
 # Misc local run logs
 uvicorn.log
+
+# Personal interview-prep notes — kept locally only, not published in this repo
+docs/interview_preparation.md

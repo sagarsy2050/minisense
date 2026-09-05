@@ -336,7 +336,6 @@ drift crosses a threshold rather than on a fixed calendar.
 - [`docs/SUBMISSION_REVIEW.md`](docs/SUBMISSION_REVIEW.md) — from-source technical review: architecture, real execution traces, design decisions, gaps, compliance matrix.
 - [`docs/whitepaper.md`](docs/whitepaper.md) — engineering white paper.
 - [`docs/presentation.md`](docs/presentation.md) — 15-slide presentation content.
-- [`docs/interview_preparation.md`](docs/interview_preparation.md) — 100 project-grounded interview Q&As.
 - [`docs/final_report.md`](docs/final_report.md) — submission readiness report (score, strengths, risks, exact files changed).
 - [`notebooks/end_to_end_workflow.ipynb`](notebooks/end_to_end_workflow.ipynb) — the core pipeline run live, minimal.
 - [`notebooks/minisense_business_analysis.ipynb`](notebooks/minisense_business_analysis.ipynb) — fuller business-analytics notebook (data quality, CSAT/theme charts, agent trace, RAG evaluation), executed with real output.

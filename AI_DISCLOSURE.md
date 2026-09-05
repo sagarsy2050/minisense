@@ -3,7 +3,7 @@
 This project — the agent implementations, RAG pipeline, synthetic data
 generator, tests, notebooks, and accompanying documentation
 (`docs/SUBMISSION_REVIEW.md`, `docs/whitepaper.md`,
-`docs/presentation.md`, `docs/interview_preparation.md`) — was developed
+`docs/presentation.md`) — was developed
 with **Claude Code (Anthropic)** as a coding and documentation assistant,
 working interactively:
 
