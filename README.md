@@ -110,11 +110,12 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt          # add -r requirements-dev.txt for tests/lint/type-check
 cp .env.example .env                      # adjust as needed — see section 5 below
 
-# 3. Generate the synthetic survey dataset (Appendix A) — 100k responses
-#    across 3 GreenLeaf Bistro locations, two months, with realistic rating
-#    drift, topic/complaint variety, and light text imperfections (typos,
-#    casing, emojis) so free_text isn't dominated by a handful of templates.
-#    --seed is optional (defaults to 42) and controls reproducibility.
+# 3. The synthetic survey dataset (Appendix A) is already committed at
+#    data/survey_responses.json — 100,000 responses across 3 GreenLeaf
+#    Bistro locations, two months, with realistic rating drift, topic/
+#    complaint variety, and light text imperfections (typos, casing,
+#    emojis) so free_text isn't dominated by a handful of templates.
+#    To regenerate it (e.g. with a different count/seed), run:
 python data/generate_data.py --count 100000 --seed 42
 
 # 4. Build the local FAQ vector index (Appendix B, Part 2)

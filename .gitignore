@@ -8,11 +8,14 @@ venv/
 # Local secrets/config — never commit; see .env.example
 .env
 
-# Generated data & indexes — reproducible via documented scripts
+# Generated FAQ vector index — reproducible via scripts/ingest_faq.py
 storage/*.faiss
 storage/*.faiss.npy
 storage/*.meta.json
-data/survey_responses.json
+
+# data/survey_responses.json IS committed (Appendix A dataset, ~32MB,
+# 100,000 records) — the assessment specifically asks for the generated
+# dataset to be part of the submission, not just its generator script.
 
 # outputs/eval_results.md is the required Part 2 evaluation checkpoint
 # deliverable and IS committed; ignore anything else generated into outputs/.
