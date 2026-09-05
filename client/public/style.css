@@ -1,49 +1,28 @@
 :root {
-  /* Light mode (default) */
-  --bg: #ffffff;
-  --panel: #ffffff;
-  --panel-2: #f8f9fa;
-  --border: #e5d6a3;
-  --text: #171717;
-  --muted: #6b7280;
-  --accent: #c9a227;
-  --accent-2: #a8841d;
-  --accent-soft: #f4e7b5;
-  --accent-soft-border: #e5d6a3;
+  /* Royal blue & gold (default) */
+  --bg: #0f2a52;
+  --panel: #14315f;
+  --panel-2: #1b3d71;
+  --border: #2c4c82;
+  --text: #f5f7fa;
+  --muted: #a9bedd;
+  --accent: #d4af37;
+  --accent-2: #c9a227;
+  --accent-soft: #3d3315;
+  --accent-soft-border: #5c4c1e;
   --accent-ink: #171717;
-  --user-bubble: #f4e7b5;
-  --agent-bubble: #ffffff;
-  --ok: #1f8a5b;
-  --warn: #a8721a;
-  --err: #c0392b;
+  --user-bubble: #3d3315;
+  --agent-bubble: #14315f;
+  --ok: #2ecc71;
+  --warn: #e0a94e;
+  --err: #e57373;
   --radius: 14px;
-  --shadow: 0 1px 2px rgba(23, 23, 23, 0.06);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
-/* Dark metallic mode: system preference (unless explicitly overridden to light) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d0d0f;
-    --panel: #1a1a1e;
-    --panel-2: #1a1a1e;
-    --border: #3a3a42;
-    --text: #f5f5f7;
-    --muted: #a1a1aa;
-    --accent: #d4af37;
-    --accent-2: #a8841d;
-    --accent-soft: #2b2410;
-    --accent-soft-border: #4a3b12;
-    --accent-ink: #171717;
-    --user-bubble: #2b2410;
-    --agent-bubble: #1a1a1e;
-    --ok: #2ecc71;
-    --warn: #e0a94e;
-    --err: #e57373;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  }
-}
-
-/* Dark metallic mode: explicit user toggle (wins over system preference) */
+/* Dark metallic mode: opt-in only via the sidebar toggle button (does not
+   follow OS dark-mode preference — the blue & gold theme above is always
+   the default look on first visit, regardless of system setting). */
 :root[data-theme="dark"] {
   --bg: #0d0d0f;
   --panel: #1a1a1e;

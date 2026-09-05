@@ -16,13 +16,14 @@ const themeIconDark = document.getElementById("theme-icon-dark");
 const THEME_KEY = "minisense-theme";
 
 function applyTheme(theme) {
-  // theme is "light", "dark", or null (follow system preference)
-  if (theme) document.documentElement.setAttribute("data-theme", theme);
+  // theme is "dark" (opt-in metallic mode) or anything else -> default blue & gold.
+  // Does NOT follow OS color-scheme preference — blue & gold is always the
+  // default look unless the user explicitly toggles dark mode.
+  if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
   else document.documentElement.removeAttribute("data-theme");
 
-  const isDark = theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  themeIconLight.style.display = isDark ? "none" : "block";
-  themeIconDark.style.display = isDark ? "block" : "none";
+  themeIconLight.style.display = theme === "dark" ? "none" : "block";
+  themeIconDark.style.display = theme === "dark" ? "block" : "none";
 }
 
 function initTheme() {
@@ -31,9 +32,7 @@ function initTheme() {
 }
 
 themeToggleBtn.addEventListener("click", () => {
-  const current = document.documentElement.getAttribute("data-theme");
-  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const currentlyDark = current === "dark" || (!current && systemDark);
+  const currentlyDark = document.documentElement.getAttribute("data-theme") === "dark";
   const next = currentlyDark ? "light" : "dark";
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
